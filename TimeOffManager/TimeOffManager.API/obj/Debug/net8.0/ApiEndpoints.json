@@ -1,0 +1,251 @@
+[
+  {
+    "ContainingType": "TimeOffManager.API.Controllers.AccountController",
+    "Method": "AcceptInvite",
+    "RelativePath": "Account/accept-invite",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "acceptInvite",
+        "Type": "TimeOffManager.Core.DTO.AcceptInviteDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TimeOffManager.API.Controllers.AccountController",
+    "Method": "GetAuthorizedCompany",
+    "RelativePath": "Account/get-authorized",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "withCompany",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TimeOffManager.API.Controllers.AccountController",
+    "Method": "IsInviteValid",
+    "RelativePath": "Account/is-invite-valid",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "emeil",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TimeOffManager.API.Controllers.AccountController",
+    "Method": "Login",
+    "RelativePath": "Account/login-to-company-workspace",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "loginToCompany",
+        "Type": "TimeOffManager.Core.DTO.LoginToCompanyDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TimeOffManager.API.Controllers.AccountController",
+    "Method": "GenerateTokenAsync",
+    "RelativePath": "Account/refresh-token",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "token",
+        "Type": "TimeOffManager.Core.DTO.Token",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TimeOffManager.API.Controllers.AccountController",
+    "Method": "SignOut",
+    "RelativePath": "Account/sign-out",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TimeOffManager.API.Controllers.AccountController",
+    "Method": "SignUp",
+    "RelativePath": "Account/sign-up",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "singUp",
+        "Type": "TimeOffManager.Core.DTO.SignUpDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TimeOffManager.API.Controllers.AccountController",
+    "Method": "UpdateAllowanceTimeOff",
+    "RelativePath": "Account/update-allowance-timeoff",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "timeOffDTO",
+        "Type": "TimeOffManager.Core.DTO.UpdateAllowanceTimeOffDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TimeOffManager.API.Controllers.AccountController",
+    "Method": "UpdateProfile",
+    "RelativePath": "Account/update-profile",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "updateProfile",
+        "Type": "TimeOffManager.Core.DTO.UpdateProfileDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TimeOffManager.API.Controllers.CompanyController",
+    "Method": "CreateCompany",
+    "RelativePath": "Company/create-company",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TimeOffManager.API.Controllers.CompanyController",
+    "Method": "EditComapnyName",
+    "RelativePath": "Company/edit-company-name",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "teamName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TimeOffManager.API.Controllers.CompanyController",
+    "Method": "GetCompanyUsers",
+    "RelativePath": "Company/get-company-users",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "companyId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TimeOffManager.API.Controllers.CompanyController",
+    "Method": "RemvoeFromTeam",
+    "RelativePath": "Company/remove-from-team",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TimeOffManager.API.Controllers.CompanyController",
+    "Method": "SendInviteToTeam",
+    "RelativePath": "Company/send-invite",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "sendInvite",
+        "Type": "TimeOffManager.Core.DTO.SendInviteDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TimeOffManager.API.Controllers.TimeOffController",
+    "Method": "AddTimeOff",
+    "RelativePath": "TimeOff/add-time-off",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "timeOff",
+        "Type": "TimeOffManager.Core.DTO.AddTimeOffDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TimeOffManager.API.Controllers.TimeOffController",
+    "Method": "GetTimeOffsByUserAndMonths",
+    "RelativePath": "TimeOff/get-time-offs-by-user-and-months",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "getTimeOffsBy",
+        "Type": "TimeOffManager.Core.DTO.GetTimeOffsByUserRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]
