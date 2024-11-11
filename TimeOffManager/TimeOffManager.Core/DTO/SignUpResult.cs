@@ -2,17 +2,22 @@
 {
     public record SignUpResult
     {
-        public string Message { get; init; }
-        public bool Success {  get; init; }
-
-        public SignUpResult(string message, bool success)
+        public bool Success {  get; }
+        public string? Message {  get; init; }
+        public Token? Token { get; init; }
+        private SignUpResult(bool success, string message, Token? token)
         {
-            Message = message;
             Success = success;
+            Message = message;
+            Token = token;
         }
-
-        public static SignUpResult Error(string message) => new SignUpResult(message, false);
-        public static SignUpResult Ok() => new SignUpResult("", true);
-
+        private SignUpResult(bool success, string message)
+        {
+            Success = success;
+            Message = message;
+        }
+        
+        public static SignUpResult Error(string message) => new SignUpResult( false, message);
+        public static SignUpResult Ok(Token token) => new SignUpResult( true,"" ,token);
     }
 }

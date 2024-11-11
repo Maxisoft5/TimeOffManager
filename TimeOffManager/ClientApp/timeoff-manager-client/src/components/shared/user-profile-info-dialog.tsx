@@ -10,6 +10,7 @@ import { Company } from "../../models/company";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from 'dayjs';
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { ApplciationSettings } from "../../models/application-settings";
 
 function UserProfileInfoDialog({currentUser}: { currentUser: User}) {
 
@@ -73,7 +74,7 @@ function UserProfileInfoDialog({currentUser}: { currentUser: User}) {
                     return;
                 }
 
-                axios.post("http://localhost:5122/account/update-profile", {
+                axios.post(`${ApplciationSettings.webApiUrl()}/account/update-profile`, {
                     firstName: fName.value,
                     lastName: lName.value,
                     email: email.value,
@@ -218,7 +219,7 @@ function UserProfileInfoDialog({currentUser}: { currentUser: User}) {
                 return;
             }
     
-            authService.post(`http://localhost:5122/company/create-company`, {
+            authService.post(`${ApplciationSettings.webApiUrl()}/company/create-company`, {
                 companyName: companyName.value,
                 logo: logo.files?.length ? logo.files[0] : [],
               },
@@ -324,7 +325,7 @@ function UserProfileInfoDialog({currentUser}: { currentUser: User}) {
 
     const handleSignOut = () => {
         let authService = new AuthService();
-        authService.post("http://localhost:5122/account/sign-out", {}, {}, 
+        authService.post(`${ApplciationSettings.webApiUrl()}/account/sign-out`, {}, {}, 
         function (response) {
             localStorage.removeItem("ACCESS_TOKEN");
             localStorage.removeItem("REFRESH_ACCESS_TOKEN");

@@ -1,6 +1,6 @@
 import { Token } from "./jwt-token";
 
-export interface SignInResult {
+export interface SignUpResult {
     success: boolean;
     message: string;
     token: Token;

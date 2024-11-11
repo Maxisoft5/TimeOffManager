@@ -17,6 +17,8 @@ import AlertTitle from '@mui/material/AlertTitle';
 import { useState } from 'react';
 import { SignInResult } from "../../models/sign-in-result";
 import { useNavigate  } from "react-router-dom";
+import { ApplciationSettings } from '../../models/application-settings';
+import { SignUpResult } from '../../models/sign-up-result';
 
 function LandingNavbar() {
 
@@ -89,7 +91,7 @@ function LandingNavbar() {
         return;
       }
 
-      axios.post(`http://localhost:5122/account/login-to-company-workspace`, {
+      axios.post(`${ApplciationSettings.webApiUrl()}/account/login-to-company-workspace`, {
         email: email.value,
         password: password.value
       },
@@ -204,7 +206,7 @@ function LandingNavbar() {
         return;
       }
 
-      axios.post(`https://localhost:5001/account/sign-up`, {
+      axios.post(`${ApplciationSettings.webApiUrl()}/account/sign-up`, {
         email: email.value,
         password: password.value,
         firstName: fName.value,
@@ -214,7 +216,7 @@ function LandingNavbar() {
       },
       {}
       )
-      .then(function (response: AxiosResponse<SignInResult>) {
+      .then(function (response: AxiosResponse<SignUpResult>) {
           if (!response.data.success) {
             setShowErrors(true);
             validationErrors.push(response.data.message);
@@ -222,7 +224,8 @@ function LandingNavbar() {
           } 
           else 
           {
-            setOpenSignUp(false);
+            localStorage.setItem("ACCESS_TOKEN", response.data.token.accessToken);
+            localStorage.setItem("REFRESH_ACCESS_TOKEN", response.data.token.refreshToken);
             navigateTo("/workspace");
           }
       })

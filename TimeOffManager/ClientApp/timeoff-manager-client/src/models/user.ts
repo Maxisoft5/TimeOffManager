@@ -13,6 +13,7 @@ export interface User {
     startWorkDate: Date;
     roleName: string;
     inviteStatus: InviteStatus;
+    companyId:number;
 }
 
 

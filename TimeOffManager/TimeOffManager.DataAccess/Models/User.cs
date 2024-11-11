@@ -6,6 +6,8 @@ namespace TimeOffManager.DataAccess.Models
 {
     public class User : IdentityUser<int>
     {
+        public int CompanyId { get; set; }
+        public Company Company { get; set; }
         public string? JobTitle { get; set; }
         public string? Phone { get; set; }
         public string FirstName { get; set; }
@@ -20,5 +22,6 @@ namespace TimeOffManager.DataAccess.Models
 
         [NotMapped]
         public string RoleName { get; set; }
+        public IEnumerable<TimeOff> TimeOffs { get; set; }
     }
 }

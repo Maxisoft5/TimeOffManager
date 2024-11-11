@@ -1,6 +1,6 @@
 ﻿namespace TimeOffManager.Core.DTO
 {
-    public struct AcceptInviteDTO
+    public struct AcceptInviteDto
     {
         public string ResetToken {  get; set; }
         public string Email { get; set; }

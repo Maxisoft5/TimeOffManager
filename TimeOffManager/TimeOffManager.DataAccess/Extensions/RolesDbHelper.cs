@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using TimeOffManager.DataAccess.Models;
 
 namespace TimeOffManager.DataAccess.Extensions
@@ -8,7 +9,7 @@ namespace TimeOffManager.DataAccess.Extensions
         public static void AddDefaultDbRoles(this IServiceCollection services)
         {
             var provider = services.BuildServiceProvider();
-            var roleManager = provider.GetRequiredService<Microsoft.AspNetCore.Identity.RoleManager<ManagerRole>>();
+            var roleManager = provider.GetRequiredService<RoleManager<CustomRole>>();
 
             var roles = new string[] { DbConstants.OwnerRoleName, DbConstants.ManagerRoleName };
 
@@ -18,7 +19,7 @@ namespace TimeOffManager.DataAccess.Extensions
 
                 if (!roleExists)
                 {
-                    roleManager.CreateAsync(new ManagerRole()
+                    roleManager.CreateAsync(new CustomRole()
                     {
                         Name = role,
                         NormalizedName = role.ToUpper()

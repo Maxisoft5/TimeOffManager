@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -19,42 +16,24 @@ namespace TimeOffManager.Core.Services
     public class AccountService(
         UserManager<User> usersService,
         SignInManager<User> signInManager,
-        RoleManager<ManagerRole> roleManager,
         IOptions<JwtOptions> options,
         IEmailService emailService,
-        IHttpContextAccessor accessor,
         DataContext dataContext) : IAccountService
     {
-        private readonly SignInManager<User> _signInManager = signInManager;
-        private readonly UserManager<User> _userManager = usersService;
-        private readonly DataContext _dataContext = dataContext;
-        private readonly RoleManager<ManagerRole> _roleManager = roleManager;
-        private readonly IHttpContextAccessor _httpContextAccessor = accessor;
-        private readonly IEmailService _emailService = emailService;
-        private readonly IOptions<JwtOptions> _jwtOptions = options;
-
         public async Task<User?> GetIfAuthorized(ClaimsPrincipal currentUser, bool withCompany = false)
         {
-            if (currentUser != null &&
-              currentUser.Identity != null)
-            {
-                var idenitity = await GetIdentity(currentUser);
-                if (idenitity != null)
-                {
-                    var users = _dataContext.Users.AsQueryable();
-                    if (withCompany)
-                    {
-                        users = users.Include(x => x.Team).ThenInclude(x => x.Company);
-                    }
-                    var user = await users.FirstOrDefaultAsync(x => x.Id == idenitity.Id);
-                    if (user != null)
-                    {
-                        return user;
-                    }
-                }
-            }
-
-            return null;
+            if (currentUser is not { Identity: not null }) return null;
+            
+            var identity = await GetIdentity(currentUser);
+            if (identity == null) return null;
+            var users = dataContext.Users.Include(x => x.Team)
+                .AsQueryable();
+            // if (withCompany)
+            // {
+            //     users = users.Include(x => x.Company);
+            // }
+            var user = await users.FirstOrDefaultAsync(x => x.Id == identity.Id);
+            return user ?? null;
         }
 
         public async Task<User?> GetIdentity(ClaimsPrincipal currentUser)
@@ -64,7 +43,7 @@ namespace TimeOffManager.Core.Services
                 return null;
             }
 
-            return await _userManager.GetUserAsync(currentUser);
+            return await usersService.GetUserAsync(currentUser);
         }
 
         public async Task<Token> RefreshToken(string token)
@@ -76,16 +55,16 @@ namespace TimeOffManager.Core.Services
             return newToken;
         }
 
-        public ClaimsPrincipal GetPrincipal(string token, bool isAccessToken = true)
+        private ClaimsPrincipal GetPrincipal(string token, bool isAccessToken = true)
         {
-            var key = new SymmetricSecurityKey(isAccessToken ? _jwtOptions.Value.AccessSecret : _jwtOptions.Value.RefreshSecret);
+            var key = new SymmetricSecurityKey(isAccessToken ? options.Value.AccessSecret : options.Value.RefreshSecret);
 
             var tokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
                 ValidateAudience = true,
-                ValidIssuer = _jwtOptions.Value.Issuer,
-                ValidAudience = _jwtOptions.Value.Audience,
+                ValidIssuer = options.Value.Issuer,
+                ValidAudience = options.Value.Audience,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = key,
                 RequireExpirationTime = true,
@@ -105,20 +84,20 @@ namespace TimeOffManager.Core.Services
 
         public async Task<DTO.SignInResult> SignIn(string username, string password)
         {
-            var exists = await _userManager.FindByNameAsync(username);
+            var exists = await usersService.FindByNameAsync(username);
 
             if (exists == null)
             {
                 return DTO.SignInResult.Error("Provided email was not found as registered");
             }
-            var checkPassword = await _signInManager.PasswordSignInAsync(exists, password, false, false);
+            var checkPassword = await signInManager.PasswordSignInAsync(exists, password, false, false);
 
             if (!checkPassword.Succeeded)
             {
                 return DTO.SignInResult.Error("Password isn't correct");
             }
 
-            var manager = new JwtManager(_jwtOptions);
+            var manager = new JwtManager(options);
             var token = manager.GenerateToken(exists.Id);
 
             return DTO.SignInResult.Ok(token);
@@ -127,12 +106,19 @@ namespace TimeOffManager.Core.Services
         public async Task<SignUpResult> SignUpOwner(string username, string password, string fName, string lName,
             DateTime birthDate, string jobTitle)
         {
-            var exists = await _userManager.FindByEmailAsync(username);
+            var exists = await usersService.FindByEmailAsync(username);
             if (exists != null)
             {
                 return SignUpResult.Error("Provided email has already registered");
             }
 
+            var defaultCompany = new Company()
+            {
+                Name = "Default"
+            };
+            await dataContext.Companies.AddAsync(defaultCompany);
+            await dataContext.SaveChangesAsync();
+            
             var manager = new Manager()
             {
                 UserName = username,
@@ -141,30 +127,33 @@ namespace TimeOffManager.Core.Services
                 BirthDate = birthDate,
                 FirstName = fName,
                 LastName = lName,
-                JobTitle = jobTitle
+                JobTitle = jobTitle,
+                CompanyId = defaultCompany.Id
             };
-            var result = await _userManager.CreateAsync(manager);
+            var result = await usersService.CreateAsync(manager);
 
             if (!result.Succeeded)
             {
                 SignUpResult.Error(string.Join(',', result.Errors.Select(x => x.Description)));
             }
 
-            var setPassword = await _userManager.AddPasswordAsync(manager, password);
+            var setPassword = await usersService.AddPasswordAsync(manager, password);
             if (!setPassword.Succeeded)
             {
                 return SignUpResult.Error(string.Join(',', setPassword.Errors.Select(x => x.Description)));
             }
 
-            var ownerRole = await _dataContext.ManagerRoles.FirstOrDefaultAsync(x => x.Name == DbConstants.OwnerRoleName);
-            var addRole = await _userManager.AddToRoleAsync(manager, ownerRole.Name);
+            var addRole = await usersService.AddToRoleAsync(manager, DbConstants.OwnerRoleName);
 
             if (!addRole.Succeeded)
             {
                 return SignUpResult.Error(string.Join(',', addRole.Errors.Select(x => x.Description)));
             }
-
-            return SignUpResult.Ok();
+            
+            var jwt = new JwtManager(options);
+            var token = jwt.GenerateToken(manager.Id);
+            
+            return SignUpResult.Ok(token);
         }
 
         public async Task<UpdateResult<User>> UpdateProfile(UpdateProfileDTO toUpdate, User user)
@@ -173,35 +162,35 @@ namespace TimeOffManager.Core.Services
             user.LastName = toUpdate.LastName;
             user.Email = toUpdate.Email;
             user.BirthDate = toUpdate.BirthDate;
-            await _dataContext.SaveChangesAsync();
+            await dataContext.SaveChangesAsync();
             return UpdateResult<User>.Ok(user);
         }
 
         public async Task<bool> IsOwner(Manager manager)
         {
-            var isrole = await _userManager.IsInRoleAsync(manager, DbConstants.OwnerRoleName);
+            var isrole = await usersService.IsInRoleAsync(manager, DbConstants.OwnerRoleName);
             return isrole;
         }
 
         public async Task SignOut()
         {
-            await _signInManager.SignOutAsync();
+            await signInManager.SignOutAsync();
         }
 
         public async Task UpdateAllowanceTimeOffForUser(int userId, int totalTimeOff, int tookTimeOff)
         {
-            var user = await _dataContext.Users.FindAsync(userId);
+            var user = await dataContext.Users.FindAsync(userId);
             user.TotalAllowanceTimeOffInYear = totalTimeOff;
             user.TookAllowanceTimeOff = tookTimeOff;
-            await _dataContext.SaveChangesAsync();
+            await dataContext.SaveChangesAsync();
         }
 
         public async Task SendInviteToTeam(User user, int teamId)
         {
-            var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var resetToken = await usersService.GeneratePasswordResetTokenAsync(user);
             var link = $"http://localhost:5173/accept-invite?token={resetToken}&email={user.Email}&fName={user.FirstName}&lName={user.LastName}";
             var message = $"Follow the link to accept invite to the team. Link: {link}";
-            await _emailService.Send(user.Email, SmtpSettings.From, message, "Accept invite to your team's workspace!");
+            await emailService.Send(user.Email, SmtpSettings.From, message, "Accept invite to your team's workspace!");
         }
 
         public async Task<User> CreateDefaultUser(string fName, string lName, string email, int teamId)
@@ -218,9 +207,9 @@ namespace TimeOffManager.Core.Services
                 RoleName = "User"
             };
 
-            await _userManager.CreateAsync(user, defaultPassword);
+            await usersService.CreateAsync(user, defaultPassword);
 
-            var setPassword = await _userManager.AddPasswordAsync(user, defaultPassword);
+            var setPassword = await usersService.AddPasswordAsync(user, defaultPassword);
 
 
             return user;
@@ -228,7 +217,7 @@ namespace TimeOffManager.Core.Services
 
         public async Task<bool> IsInviteValid(string email)
         {
-            var user = await _dataContext.Users.FirstOrDefaultAsync(x => x.UserName == email);
+            var user = await dataContext.Users.FirstOrDefaultAsync(x => x.UserName == email);
             return user != null && user.TeamId != 0 && user.InviteStatus == DataAccess.Enums.InviteStatus.WaitForAccept; 
         }
     }

@@ -31,16 +31,18 @@ builder.Services.AddCors(options =>
             });
 });
 
+builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ITimeOffService, TimeOffService>();
-builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
-builder.Services.AddIdentity<User, ManagerRole>(o =>
+builder.Services.AddIdentity<User, CustomRole>(o =>
 {
     o.Lockout.AllowedForNewUsers = false;
 })
+.AddRoles<CustomRole>()
+    .AddRoleManager<RoleManager<CustomRole>>()
 .AddEntityFrameworkStores<DataContext>()
 .AddTokenProvider<DataProtectorTokenProvider<User>>(TokenOptions.DefaultProvider);
 
@@ -49,7 +51,7 @@ var connectionStrings = builder.Configuration.GetSection("ConnectionStrings").Ge
 var dbConnection = connectionStrings.FirstOrDefault(x => x.Key == "TimeOffManagerConnection");
 builder.Services.AddDbContext<DataContext>(options =>
 {
-    options.UseSqlServer(dbConnection.Value);
+    options.UseSqlServer(dbConnection.Value).LogTo(Console.WriteLine, LogLevel.Information);
     options.EnableDetailedErrors();
     options.EnableSensitiveDataLogging();
 }, optionsLifetime: ServiceLifetime.Scoped, contextLifetime: ServiceLifetime.Scoped);

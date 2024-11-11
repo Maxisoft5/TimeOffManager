@@ -2,7 +2,7 @@
 
 namespace TimeOffManager.Core.DTO
 {
-    public struct AddTimeOffDTO
+    public struct AddTimeOffDto
     {
         public int TeamId { get; set; }
         public RequestType Type { get; set; }

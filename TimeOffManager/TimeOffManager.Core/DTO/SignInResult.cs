@@ -2,11 +2,11 @@
 {
     public record SignInResult
     {
-        public bool Success {  get; init; }
+        public bool Success {  get; }
         public string Message {  get; init; }
-        public Token Token { get; init; }
+        public Token? Token { get; init; }
 
-        public SignInResult(bool success, string message, Token token)
+        private SignInResult(bool success, string message, Token? token)
         {
             Success = success;
             Message = message;

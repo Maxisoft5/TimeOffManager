@@ -30,7 +30,7 @@ namespace TimeOffManager.API.Controllers
 
         [Authorize]
         [HttpPost("add-time-off")]
-        public async Task<IActionResult> AddTimeOff([FromBody] AddTimeOffDTO timeOff)
+        public async Task<IActionResult> AddTimeOff([FromBody] AddTimeOffDto timeOff)
         {
             var manId = await _teamService.GetManagerIdByTeamId(timeOff.TeamId);
             var added = await _timeOffService.AddTimeOffRequest(new TimeOff()

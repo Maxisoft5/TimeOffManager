@@ -20,16 +20,20 @@ import CreateIcon from '@mui/icons-material/Create';
 import DeleteIcon from '@mui/icons-material/Delete';
 import axios, { AxiosResponse } from "axios";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import { CompanyService } from "../../services/auth/company-service";
+import { ApplciationSettings } from "../../models/application-settings";
+import { TeamsManagerProvider, useSharedTeamsData } from "./teams-manager-cxt";
 
 function TeamsManagerMain() {
 
     const [usersInTeam, setUsersInTeam] = useState<User[]>([]);
     const [selectedTeamId, setSelectedTeamId] = useState(0);
-    const [selectedTeamLabel, setSelectedTeamLabel] = useState("");
+    const [selectedTeamLabel, setSelectedTeamLabel] = useState("None");
     const [showErrors, setShowErrors] = useState(false);
     const [showEditTeamName, setShowEditTeamName] = useState(false);
     const [showAddTeamate, setShowAddTeamate] = useState(false);
     const [validationErrors, setValidationErrors] = useState([""]);
+    const { data } = useSharedTeamsData();
 
     let defaultUser: User = {
         id:0,
@@ -43,7 +47,8 @@ function TeamsManagerMain() {
         teamId:0,
         roleName: "",
         team: null,
-        inviteStatus: InviteStatus.None
+        inviteStatus: InviteStatus.None,
+        companyId: 0
     };
     const [editedUser, setEditUser] = useState<User>(defaultUser);
     const [showEditUser, setShowEditUser] = useState(false);
@@ -54,8 +59,9 @@ function TeamsManagerMain() {
     
     useEffect(() => {
         let authService = new AuthService();
+        let companyService = new CompanyService();
         if (currentUser == null || currentUser.id == 0) {
-            authService.get(`http://localhost:5122/account/get-authorized?withCompany=true`, {}, (user:AxiosResponse<User>) => {
+            authService.getUserIfAuthorized({}, (user:AxiosResponse<User>) => {
                 if (!user?.data) {
                      navigateTo("/");
                 } else {
@@ -71,18 +77,17 @@ function TeamsManagerMain() {
                 console.log(error);
             });
         }
-        if (currentUser.id != 0 && usersInTeam.length == 0) {
-            authService.get(`http://localhost:5122/company/get-company-users?companyId=${currentUser.team?.companyId}`, {}, 
+        if (currentUser.id != 0 && usersInTeam.length == 0 && currentUser.team?.companyId) {
+            companyService.getCompanyUsers({}, 
              (users:AxiosResponse<User[]>) => {
                 if (!users?.data) {
-                     alert("Replace this server error");
                 } else {
                     setUsersInTeam(users.data);
                 }
 
             }, function (error) {
                 console.log(error);
-            });
+            }, currentUser.companyId);
         }
     });
 
@@ -117,7 +122,7 @@ function TeamsManagerMain() {
                 return;
             }
 
-            axios.post("http://localhost:5122/company/send-invite", {
+            axios.post(`${ApplciationSettings.webApiUrl()}/company/send-invite`, {
                 firstName: fName.value,
                 lastName: lName.value,
                 email: email.value,
@@ -195,7 +200,7 @@ function TeamsManagerMain() {
         };
 
         const handleDeleteUser = () => {
-            axios.delete(`http://localhost:5122/company/remove-from-team?userId=${userIdFromDeleteDialog}`, {}).then(() => {
+            axios.delete(`${ApplciationSettings.webApiUrl()}/company/remove-from-team?userId=${userIdFromDeleteDialog}`, {}).then(() => {
                 setShowDeleteConfirmUser(false);
                 let usersInTeamUpd = usersInTeam.filter(x => x.id != userIdFromDeleteDialog); 
                 setUsersInTeam(usersInTeamUpd);
@@ -251,7 +256,7 @@ function TeamsManagerMain() {
 
         const handleEditTeamName = () => {
             let updatedName = document.getElementById("team-name") as HTMLInputElement;
-            axios.patch(`http://localhost:5122/company/edit-company-name?id=${selectedTeamId}&teamName=${encodeURIComponent(updatedName.value)}`, {
+            axios.patch(`${ApplciationSettings.webApiUrl()}/company/edit-company-name?id=${selectedTeamId}&teamName=${encodeURIComponent(updatedName.value)}`, {
                 
             }, {}).then(() => {
                 if (currentUser.team) {
@@ -285,7 +290,7 @@ function TeamsManagerMain() {
                             id="team-name"
                             margin="normal"
                             label="Team name"
-                            defaultValue={selectedTeamLabel}
+                            defaultValue={data ? data : selectedTeamLabel}
                             type="text"
                             variant="standard"
                         />
@@ -313,7 +318,7 @@ function TeamsManagerMain() {
             let totalTimeOff = document.getElementById("total-time-off") as HTMLInputElement;
             let tookTimeOff = document.getElementById("took-time-off") as HTMLInputElement;
 
-            axios.patch("http://localhost:5122/account/update-allowance-timeoff", 
+            axios.patch(`${ApplciationSettings.webApiUrl()}/account/update-allowance-timeoff`, 
             {
                 userId: editedUser.id,
                 totalTimeOff: totalTimeOff.value,
@@ -518,11 +523,8 @@ function TeamsManagerMain() {
         </>);
     }
 
-    const handleChangeTeam = (event: React.ChangeEvent) => {
-        let id = event.target.nodeValue ? +event.target.nodeValue : 0;
-        setSelectedTeamId(id);
-        let team = currentUser.team?.company?.teams.find(x => x.id == id);
-        setSelectedTeamLabel(team?.name ?? "");
+    const handleChangeTeam = (event:any) => {
+        setSelectedTeamLabel(event.target.value as string);
     };
 
     function GetTeams() {
@@ -545,39 +547,49 @@ function TeamsManagerMain() {
         setShowAddTeamate(true);
     };
 
+    let showEditTeam = <></>;
+    if (selectedTeamId) {
+        showEditTeam = <span style={{marginLeft: "10px", cursor: "pointer"}}>
+            <Tooltip title="Edit team's name">
+                <CreateIcon onClick={handleEditTeamName} color="primary"/>
+            </Tooltip>
+        </span>;
+    }
+    let showAddNewUser = <></>;
+    if (selectedTeamId) {
+        showAddNewUser =  <Button onClick={handleAddTeamate} variant="outlined" startIcon={<AddCircleOutlineIcon />}>
+                Add a new user
+        </Button>;
+    }
+
     return (<>
-        <TeamsManagerNavbar/>
-            <div style={{padding: "20px"}}>
-                <Box sx={{ marginTop: "10px", marginBottom: "10px", display:"flex", justifyContent:"space-between" }}>
-                    <span>
-                        <InputLabel style={{ color: "black"}} id="team-select-label">Team </InputLabel>
-                        <NativeSelect
-                            defaultValue={30}
-                            onChange={handleChangeTeam}
-                            inputProps={{
-                                name: 'age',
-                                id: 'uncontrolled-native',
-                            }}
-                            >
-                            <GetTeams/>
-                        </NativeSelect>
-                        <span style={{marginLeft: "10px", cursor: "pointer"}}>
-                            <Tooltip title="Edit team's name">
-                                <CreateIcon onClick={handleEditTeamName} color="primary"/>
-                            </Tooltip>   
+        <TeamsManagerProvider>
+            <TeamsManagerNavbar/>
+                <div style={{padding: "20px"}}>
+                    <Box sx={{ marginTop: "10px", marginBottom: "10px", display:"flex", justifyContent:"space-between" }}>
+                        <span>
+                            <span style={{display:"flex", alignItems:"center", gap:"15px"}}>
+                                <InputLabel style={{ color: "black"}} id="team-select-label">Team </InputLabel>
+                                <NativeSelect
+                                    value={data ? data : selectedTeamLabel}
+                                    onChange={handleChangeTeam}>
+                                        <option key="none" value="-1">{data ? data : "None"}</option>
+                                        <option key="none" value="3">{data ? data : "None3"}</option>
+                                    <GetTeams/>
+                                </NativeSelect>
+                                {showEditTeam}
+                            </span>
                         </span>
-                    </span>
-                    <Button onClick={handleAddTeamate} variant="outlined" startIcon={<AddCircleOutlineIcon />}>
-                            Add a new user
-                    </Button>   
-                </Box>
-                <TeamsTable/>
-                <EditUserDialog/>
-                <EditTeamNameDialog/>
-                <DeleteConfirmDialog/>
-                <AddTeamateDialog/>
-            </div>
-        <TeamsManagerFooter/>
+                        {showAddNewUser}
+                    </Box>
+                    <TeamsTable/>
+                    <EditUserDialog/>
+                    <EditTeamNameDialog/>
+                    <DeleteConfirmDialog/>
+                    <AddTeamateDialog/>
+                </div>
+            <TeamsManagerFooter/>
+        </TeamsManagerProvider>
     </>);
 }
 

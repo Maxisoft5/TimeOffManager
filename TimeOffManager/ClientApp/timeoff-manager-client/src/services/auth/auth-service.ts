@@ -22,7 +22,7 @@ export class AuthService  {
             },
             (error) => {
                 if (error.response.status == 401) {
-                    axios.post(`${ApplciationSettings.webApiUrl}/account/refresh-token`, { 
+                    axios.post(`${ApplciationSettings.webApiUrl()}/account/refresh-token`, { 
                     }).
                     then(function (token:AxiosResponse<Token>) {
                             if (!token?.data) {
@@ -45,7 +45,7 @@ export class AuthService  {
     getUserIfAuthorized(config:AxiosRequestConfig<any> | undefined, 
         then: (response: any) => void, 
         onCatch: (error:any) => void ) {
-         return axios.get(`${ApplciationSettings.webApiUrl}/account/get-authorized?withCompany=true`, config).then(then)
+         return axios.get(`${ApplciationSettings.webApiUrl()}/account/get-authorized?withCompany=true`, config).then(then)
             .catch(onCatch);
     }
 

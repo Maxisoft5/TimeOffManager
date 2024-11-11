@@ -8,7 +8,7 @@ export class CompanyService extends BaseAuthService {
         then: (response: any) => void, 
         onCatch: (error:any) => void, companyId: number | undefined) 
     {
-        return axios.get(`${ApplciationSettings.webApiUrl}/company/get-company-users?companyId=${companyId}`
+        return axios.get(`${ApplciationSettings.webApiUrl()}/company/get-company-users?companyId=${companyId}`
             ,config).then(then)
             .catch(onCatch);
     }

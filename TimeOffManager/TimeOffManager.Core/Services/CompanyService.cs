@@ -7,37 +7,37 @@ namespace TimeOffManager.Core.Services
 {
     public class CompanyService(DataContext dataContext, ITeamService teamService) : ICompanyService
     {
-        private readonly DataContext _dataContext = dataContext;
-        private readonly ITeamService _teamService = teamService;
-
         public async Task<Manager> AssignCompanyToManager(int companyId, Manager manager)
         {
-            var defaultTeam = await _teamService.CreateDefaultTeamForManager(companyId);
+            var defaultTeam = await teamService.CreateDefaultTeamForManager(companyId);
             manager.TeamId = defaultTeam.Id;
-            await _dataContext.SaveChangesAsync();
+            await dataContext.SaveChangesAsync();
             return manager;
         }
 
         public async Task<Company> CreateCompany(Company company)
         {
-            await _dataContext.Companies.AddAsync(company);
-            await _dataContext.SaveChangesAsync();
+            await dataContext.Companies.AddAsync(company);
+            await dataContext.SaveChangesAsync();
             return company;
         }
 
         public async Task<IEnumerable<Team>> GetAllTeamsFromCompany(int companyId)
         {
-            var teams = await _dataContext.Teams.Where(x => x.CompanyId == companyId).ToListAsync();
+            var teams = await dataContext.Teams
+                .Include(x => x.Employees).ThenInclude(x => x.Company)
+                .Where(x => x.Employees.Any(y => y.CompanyId == companyId)).ToListAsync();
+            
             return teams;
         }
 
         public async Task<IEnumerable<User>> GetAllUsersFromCompany(int companyId)
         {
-            var company = await _dataContext.Companies
-                .Include(x => x.Teams).ThenInclude(x => x.Users)
-                .FirstOrDefaultAsync(x => x.Id == companyId);
+            var company = await dataContext.Companies
+                .Include(x => x.Employees).Where(x => x.Id == companyId)
+                .ToListAsync();
 
-            return company.Teams.SelectMany(x => x.Users);
+            return company.SelectMany(x => x.Employees);
         }
     }
 }

@@ -1,3 +1,3 @@
 export class ApplciationSettings {
-    static webApiUrl: "https://localhost:44395";
+    public static webApiUrl() {return "https://localhost:5001"; };
 }

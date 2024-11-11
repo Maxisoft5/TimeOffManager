@@ -5,9 +5,8 @@ using TimeOffManager.DataAccess.Models;
 
 namespace TimeOffManager.DataAccess.Context
 {
-    public class DataContext : IdentityUserContext<User, int>
+    public class DataContext : IdentityDbContext<User, CustomRole, int>
     {
-        public DbSet<ManagerRole> ManagerRoles { get; set; }
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Manager> Managers { get; set; }
         public DbSet<Team> Teams { get; set; }
@@ -24,8 +23,7 @@ namespace TimeOffManager.DataAccess.Context
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(DataContext).Assembly);
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<IdentityUserRole<int>>().HasKey(p => new { p.UserId, p.RoleId });
-            modelBuilder.Entity<IdentityRoleClaim<int>>();
+            modelBuilder.Entity<CustomRole>().ToTable("CustomRoles");
         }
     }
 }

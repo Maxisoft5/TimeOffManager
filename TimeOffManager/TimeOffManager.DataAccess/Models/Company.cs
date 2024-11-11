@@ -9,6 +9,7 @@ namespace TimeOffManager.DataAccess.Models
         public byte[]? Logo { get; set; }
         [NotMapped]
         public string? LogoBase64 { get; set; }
-        public IEnumerable<Team> Teams { get; set; }
+        
+        public IEnumerable<Employee> Employees {get; set; }
     }
 }

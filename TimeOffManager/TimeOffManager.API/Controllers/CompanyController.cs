@@ -55,10 +55,10 @@ namespace TimeOffManager.API.Controllers
         public async Task<IActionResult> GetCompanyUsers([FromQuery] int companyId)
         {
             var users = await _companyService.GetAllUsersFromCompany(companyId);
-            var usersDTO = new List<User>();
+            var usersDto = new List<User>();
             foreach (var user in users)
             {
-                usersDTO.Add(new User()
+                usersDto.Add(new User()
                 {
                     FirstName = user.FirstName,
                     LastName = user.LastName,
@@ -66,7 +66,7 @@ namespace TimeOffManager.API.Controllers
                     StartWorkDate = user.StartWorkDate,
                     BirthDate = user.BirthDate,
                     Id = user.Id,
-                    RoleName = user as Manager != null && await _accountService.IsOwner(user as Manager) ? "Owner" : user.RoleName,
+                    RoleName = user is Manager man && await _accountService.IsOwner(man) ? "Owner" : user.RoleName,
                     JobTitle = user.JobTitle,
                     InviteStatus = user.InviteStatus,
                     TotalAllowanceTimeOffInYear = user.TotalAllowanceTimeOffInYear,
@@ -74,7 +74,7 @@ namespace TimeOffManager.API.Controllers
                 });
             }
 
-            return Ok(usersDTO);
+            return Ok(usersDto);
         }
 
         [Authorize]
@@ -95,7 +95,7 @@ namespace TimeOffManager.API.Controllers
 
         [Authorize]
         [HttpPost("send-invite")]
-        public async Task<IActionResult> SendInviteToTeam([FromBody] SendInviteDTO sendInvite)
+        public async Task<IActionResult> SendInviteToTeam([FromBody] SendInviteDto sendInvite)
         {
             var defaultUser = await _accountService.CreateDefaultUser(sendInvite.FirstName, sendInvite.LastName, sendInvite.Email,
                     sendInvite.TeamId);

@@ -5,20 +5,13 @@ using TimeOffManager.DataAccess.Models;
 
 namespace TimeOffManager.Core.Services
 {
-    public class TimeOffService : ITimeOffService
+    public class TimeOffService(DataContext dataContext) : ITimeOffService
     {
-        private readonly DataContext _dataContext;
-
-        public TimeOffService(DataContext dataContext) 
-        {
-            _dataContext = dataContext;
-        }
-
         public async Task<TimeOff> AddTimeOffRequest(TimeOff timeOff, int approverId)
         {
             timeOff.ApproverId = approverId;
-            await _dataContext.TimeOffs.AddAsync(timeOff);
-            await _dataContext.SaveChangesAsync();  
+            await dataContext.TimeOffs.AddAsync(timeOff);
+            await dataContext.SaveChangesAsync();  
             return timeOff;
         }
 
@@ -28,7 +21,7 @@ namespace TimeOffManager.Core.Services
             var last = month[month.Length - 1];
 
             
-            var timeOffs = await _dataContext.TimeOffs.Where(x => x.IsApproved == approved && x.EmployeeId == userId 
+            var timeOffs = await dataContext.TimeOffs.Where(x => x.IsApproved == approved && x.EmployeeId == userId 
               && x.StartDate.Year == year && x.StartDate.Month >= first && x.EndDate.Month <= last).ToListAsync();
 
             return timeOffs;

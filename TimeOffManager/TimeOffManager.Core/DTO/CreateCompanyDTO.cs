@@ -2,7 +2,7 @@
 
 namespace TimeOffManager.Core.DTO
 {
-    public struct CreateCompanyDTO
+    public struct CreateCompanyDto
     {
         public string Name { get; set; }
         public IFormFile Logo { get; set; }

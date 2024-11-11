@@ -1,6 +1,6 @@
 ﻿namespace TimeOffManager.Core.DTO
 {
-    public struct SendInviteDTO
+    public struct SendInviteDto
     {
         public string FirstName {  get; set; }
         public string LastName { get; set; }

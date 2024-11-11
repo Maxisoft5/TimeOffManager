@@ -9,7 +9,8 @@ namespace TimeOffManager.DataAccess.Configurations
         public void Configure(EntityTypeBuilder<Company> builder)
         {
             builder.HasKey(obj => obj.Id);
-            builder.HasMany(obj => obj.Teams).WithOne(obj => obj.Company).HasForeignKey(f => f.CompanyId);
+            builder.HasMany(obj => obj.Employees).
+                WithOne(obj => obj.Company).HasForeignKey(f => f.CompanyId);
         }
     }
 }

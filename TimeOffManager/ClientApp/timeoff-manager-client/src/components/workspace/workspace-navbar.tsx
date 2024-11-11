@@ -33,7 +33,8 @@ function WorkSpaceNavBar() {
     useEffect(() => {
         let authService = new AuthService();
         if (currentUser == null || currentUser.id == 0) {
-            authService.get(`http://localhost:5122/account/get-authorized?withCompany=true`, {}, (user:AxiosResponse<User>) => {
+            authService.getUserIfAuthorized({}, 
+            (user:AxiosResponse<User>) => {
                 if (!user?.data) {
                      navigateTo("/");
                 } else {
@@ -89,7 +90,7 @@ function WorkSpaceNavBar() {
                     </span>
                     <ManageTeamsBtn/>
                     <UserProfileInfoDialog 
-                    currentUser={currentUser} />
+                        currentUser={currentUser} />
             </span>
         </>)
 

@@ -8,6 +8,8 @@ import './teams-manager-main.css'
 import UserProfileInfoDialog from '../shared/user-profile-info-dialog';
 import { Alert, AlertTitle, Dialog, DialogActions, DialogTitle, TextField } 
 from "@mui/material"
+import { ApplciationSettings } from '../../models/application-settings';
+import { useSharedTeamsData } from './teams-manager-cxt';
 
 function TeamsManagerNavbar() {
 
@@ -18,6 +20,7 @@ function TeamsManagerNavbar() {
     const [showTeamCreate, setShowTeamCreate] = useState(false);
     const [myTeamTabSelected, setMyTeamTabSelected] = useState(true);
     const [createTeamTabSelected, setCreateTeamTabSelected ] = useState(false);
+    const { setData  } = useSharedTeamsData();
 
     let defaultUser: User = {
         id:0,
@@ -34,13 +37,13 @@ function TeamsManagerNavbar() {
         inviteStatus: InviteStatus.None
     };
     const [currentUser, setCurrentUser] = useState<User>(defaultUser);
+    let authService = new AuthService();
 
     const navigateTo = useNavigate();
 
     useEffect(() => {
-        let authService = new AuthService();
         if (currentUser == null || currentUser.id == 0) {
-            authService.get(`http://localhost:5122/account/get-authorized?withCompany=true`, {}, (user:AxiosResponse<User>) => {
+            authService.getUserIfAuthorized({}, (user:AxiosResponse<User>) => {
                 if (!user?.data) {
                      navigateTo("/");
                 } else {
@@ -88,7 +91,15 @@ function TeamsManagerNavbar() {
         };
 
         const handleAddTeam = () => {
+            let teamName = document.getElementById("team-name") as HTMLInputElement;
+            authService.post(`${ApplciationSettings.webApiUrl()}/teams/create?name=${encodeURIComponent(teamName.value)}`, {
 
+            }, {}, (resp) => {
+
+                setData(resp.data.team.name);
+                setShowTeamCreate(false);
+
+            }, (err) => {} );
         };
 
         return (<>

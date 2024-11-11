@@ -20,10 +20,10 @@ import axios, { AxiosResponse } from "axios";
 import CircularProgress from '@mui/material/CircularProgress';
 import RequestTimeOffDialog from "../shared/add-time-off-request-dialog";
 import { TimeOff, TimeOffType } from "../../models/time-off";
-import { ApplciationSettings } from "../../models/application-settings";
 import LocalHotelIcon from '@mui/icons-material/LocalHotel';
 import BeachAccessIcon from '@mui/icons-material/BeachAccess';
 import { TimeOffService } from "../../services/time-off-service";
+import { CompanyService } from "../../services/auth/company-service";
 
 function WorkSpaceMain() {
 
@@ -33,7 +33,6 @@ function WorkSpaceMain() {
     const [showTimeOffRequest, setShowTimeOffRequest ] = useState(false);
     const [showViewTimeOff, setShowViewTimeOff ] = useState(false);
     const [anchorViewTimeOff, setAnchorViewTimeOff] = useState<HTMLButtonElement | null>(null);
-
 
     const [usersInTeam, setUsersInTeam] = useState<User[]>([]);
     const selectedTimeOffDay = useRef("");
@@ -62,6 +61,7 @@ function WorkSpaceMain() {
     useEffect(() => {
         let authService = new AuthService();
         let timeOffService = new TimeOffService();
+        let companyService = new CompanyService();
         if (currentUser == null || currentUser.id == 0) {
             authService.getUserIfAuthorized({}, (user:AxiosResponse<User>) => {
                 if (!user?.data) {
@@ -72,7 +72,7 @@ function WorkSpaceMain() {
                         let currentDate = new Date();
                         let currentYear = currentDate.getFullYear();
                         let currentMonth = currentDate.getMonth();
-                        timeOffService.getTimeOffsByUserAndMonths("http://localhost:5122/timeOff/get-time-offs-by-user-and-months", 
+                        timeOffService.getTimeOffsByUserAndMonths(
                         {
                             userId: user.data.id,
                             months: [currentMonth, currentMonth+1],
@@ -116,14 +116,13 @@ function WorkSpaceMain() {
             });
         }
         if (currentUser.id != 0 && (!usersInTeam || usersInTeam.length == 0) ) {
-            ApplciationSettings.webApiUrl;
-            authService.get(`${ApplciationSettings.webApiUrl}/company/get-company-users?companyId=${currentUser.team?.companyId}`, {}, 
+            companyService.getCompanyUsers({}, 
             (resp: AxiosResponse<User[]>) => {
                 setUsersInTeam(resp.data);
             },
             function (error) {
                 console.log(error);
-            });
+            }, currentUser.team?.companyId);
         }
     });
 
@@ -505,7 +504,6 @@ function WorkSpaceMain() {
         }, (err) => console.log(err));
     };
 
-    console.log("workspace-return");
     return (<>
             <WorkSpaceNavBar/>
             <div style={{ padding: "50px" }}>

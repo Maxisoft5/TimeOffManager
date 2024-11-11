@@ -7,6 +7,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import axios, { AxiosResponse } from "axios";
 import { useNavigate } from "react-router-dom";
 import { SignInResult } from "../../models/sign-in-result";
+import { ApplciationSettings } from "../../models/application-settings";
 
 
 function AcceptInvitePage() {
@@ -74,7 +75,7 @@ function AcceptInvitePage() {
             }
         }
 
-        axios.get(`http://localhost:5122/account/is-invite-valid?emeil=${email}`)
+        axios.get(`${ApplciationSettings.webApiUrl()}/account/is-invite-valid?emeil=${email}`)
             .then((res:AxiosResponse<boolean>) => {
                 if (!res.data) {
                     navigateTo("/");
@@ -123,7 +124,7 @@ function AcceptInvitePage() {
             let bDate = document.getElementById("BirthDate") as HTMLInputElement;
             let title = document.getElementById("job-title") as HTMLInputElement;
 
-            axios.post("http://localhost:5122/account/accept-invite", {
+            axios.post(`${ApplciationSettings.webApiUrl()}/account/accept-invite`, {
                 resetToken: token,
                 email:email,
                 newPassword: password.value,

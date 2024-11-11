@@ -22,7 +22,7 @@ export class BaseAuthService {
             },
             (error) => {
                 if (error.response.status == 401) {
-                    axios.post(`${ApplciationSettings.webApiUrl}/account/refresh-token`, { 
+                    axios.post(`${ApplciationSettings.webApiUrl()}/account/refresh-token`, { 
                     }).
                     then(function (token:AxiosResponse<Token>) {
                             if (!token?.data) {
